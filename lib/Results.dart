@@ -1,66 +1,86 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:english_test1/DatabaseProvider.dart';
 import 'Test.dart';
 import 'Question.dart';
 import 'AndroidN.dart';
-int numberOfRightAnswers(List<String> list){
-  int count = 0;
-  for  (int i=0;i<25; i++) {
-    if (list[i] == test1[i].rightAnswer)
-      count++;
-  }
-  return count;
-}
-String countText (List<String> list)
-{
-  int count = numberOfRightAnswers(list);
-  if (count < 13)
-    return "You can do better";
-  else if (count < 21)
-    return "Not bad";
-  else
-    return "Awesome!";
-}
-String countResult(List<String> list){
-  int count = numberOfRightAnswers(list);
-  if (count < 7)
-    return "A1(Beginner)";
-  else if (count < 13)
-    return "A2(Elementary)";
-  else if (count < 18)
-    return  "B1(Intermediate)";
-  else if (count < 21)
-    return "B2(Upper Intermediate)";
-  else if (count < 24)
-    return "C1(Advanced)";
-  else
-    return "C2(Mastery)";
-}
-bool checkAnswer (String answer, Question question)
-{
-  return (answer == question.rightAnswer);
-}
-bool myAnswer (String answer,int i, List<String> list)
-{
-  return (answer == list[i]);
-}
-bool wrongAnswer (String answer, Question question, int i, List<String> list)
-{
-  return ((myAnswer(answer, i, list)) && !(checkAnswer(answer, question)));
-}
-class Results extends StatelessWidget {
 
+class Results extends StatefulWidget {
   final List<String> list;
+  final int id;
+  Results( this.list, this.id
+
+      ) : super();
+
+  @override
+  _Results createState() => _Results();
+}
 
 
-  Results(
-      {
-        Key key, this.list
+class _Results extends State<Results> {
+  List<Question> test = [];
+  @override
+  void initState() {
+    super.initState();
+    test = [];
+    DatabaseProvider().openSolutionDatabase().then((_){
+      DatabaseProvider().questions(widget.id).then((questions){
+        setState(() {
+          test = questions;
+        });
       }
-      ): super(key: key);
+      );
+    }
+    );
+  }
+  int numberOfRightAnswers(){
+    int count = 0;
 
+    for  (int i=0;i<25; i++) {
 
+      if (widget.list[i] == test[i].rightAnswer)
+        count++;
+    }
+    return count;
+  }
+  String countText ()
+  {
+    int count = numberOfRightAnswers();
+    if (count < 13)
+      return "You can do better";
+    else if (count < 21)
+      return "Not bad";
+    else
+      return "Awesome!";
+  }
+  String countResult(){
+    int count = numberOfRightAnswers();
+    if (count < 7)
+      return "A1(Beginner)";
+    else if (count < 13)
+      return "A2(Elementary)";
+    else if (count < 18)
+      return  "B1(Intermediate)";
+    else if (count < 21)
+      return "B2(Upper Intermediate)";
+    else if (count < 24)
+      return "C1(Advanced)";
+    else
+      return "C2(Mastery)";
+  }
+  bool checkAnswer (String answer, Question question)
+  {
+    return (answer == question.rightAnswer);
+  }
+  bool myAnswer (String answer,int i)
+  {
+    return (answer == widget.list[i]);
+  }
+  bool wrongAnswer (String answer, Question question, int i)
+  {
+    return ((myAnswer(answer, i)) && !(checkAnswer(answer, question)));
+  }
   List<Widget> createAnswers(Question question, int i){
     List<Widget> widgets = [];
     for (String answer in question.answers ) {
@@ -68,22 +88,20 @@ class Results extends StatelessWidget {
         RadioListTile(
 
           value: answer,
-          groupValue: list[i],
+          groupValue: widget.list[i],
           title: Text(answer,
-          style: TextStyle(
-              /*backgroundColor: (checkAnswer(answer, question) && !(myAnswer(answer, i, list)))?
+            style: TextStyle(
+
+              color: (wrongAnswer(answer, question, i))?
+              Colors.red: (checkAnswer(answer, question))?
               Colors.green:
-              Colors.white,*/
-            color: (wrongAnswer(answer, question, i, list))?
-            Colors.red: (checkAnswer(answer, question))?
-            Colors.green:
-            Colors.black,
+              Colors.black,
+            ),
           ),
-          ),
-          selected: answer == list[i],
+          selected: answer == widget.list[i],
           onChanged: (answer) {
           },
-          activeColor: (wrongAnswer(answer, question, i, list))?
+          activeColor: (wrongAnswer(answer, question, i))?
           Colors.red:
           Colors.green,
         ),
@@ -95,32 +113,32 @@ class Results extends StatelessWidget {
   List<Widget> createTest() {
     List<Widget> widgets = [];
     for (int i =0 ; i< 25; i++ ) {
-      Question question = test1[i];
+      Question question = test[i];
       widgets.add(
         Padding(
           padding: EdgeInsets.symmetric (horizontal: 10),
-        child:
-        Text(
-            question.question,
+          child:
+          Text(
+              question.question,
 
-            style: TextStyle (height: 1.0,
-              fontSize: 19.0,
+              style: TextStyle (height: 1.0,
+                fontSize: 19.0,
 
-            )
-        ),
+              )
+          ),
         ),
       );
       widgets.add(
         Column(
-        children: createAnswers(question, i),
+          children: createAnswers(question, i),
         ),
 
       );
       widgets.add(
-        Divider(
-          height: 20,
-          color: Colors.lightBlue,
-        )
+          Divider(
+            height: 20,
+            color: Colors.lightBlue,
+          )
       );
     }
     return widgets;
@@ -130,6 +148,15 @@ class Results extends StatelessWidget {
   @override
 
   Widget build(BuildContext context) {
+    if (test.isEmpty) {
+      return Scaffold(
+          body: Center(
+              child : CircularProgressIndicator(
+              )
+          )
+      );
+    }
+    else
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -137,12 +164,12 @@ class Results extends StatelessWidget {
           toolbarHeight: 75,
           title: Text(
               'English test',
-              style: TextStyle (
+              style: TextStyle(
                 fontSize: 22.0,
               )
           ),
-          actions: <Widget> [
-            IconButton (
+          actions: <Widget>[
+            IconButton(
               icon: const Icon(Icons.contact_support_outlined),
               onPressed:
                   () async {
@@ -161,7 +188,7 @@ class Results extends StatelessWidget {
       ),
       body:
 
-       ListView(
+      ListView(
 
         children:
         <Widget>[
@@ -169,28 +196,28 @@ class Results extends StatelessWidget {
             alignment: Alignment.topCenter,
             child:
             Text(
-                countText(list),
-            style: TextStyle (height: 1.5,
-          fontSize: 36.0,
-            )
+                countText(),
+                style: TextStyle(height: 1.5,
+                  fontSize: 36.0,
+                )
             ),
-            ),
+          ),
           Align(
             alignment: Alignment.topCenter,
             child:
             Text(
-                "Your english level is " + countResult(list) ,
-                style: TextStyle (height: 1.5,
+                "Your english level is " + countResult(),
+                style: TextStyle(height: 1.5,
                   fontSize: 20.0,
                 )
             ),
-      ),
+          ),
           Align(
             alignment: Alignment.topCenter,
             child:
             Text(
-                numberOfRightAnswers(list).toString() + "/25 correct answers",
-                style: TextStyle (height: 1.5,
+                numberOfRightAnswers().toString() + "/25 correct answers",
+                style: TextStyle(height: 1.5,
                   fontSize: 20.0,
                 )
             ),
@@ -204,11 +231,11 @@ class Results extends StatelessWidget {
 
           ),
 
-          ],
-        ),
+        ],
+      ),
 
-      );
-
+    );
   }
+
 
 }

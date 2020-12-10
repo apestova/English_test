@@ -15,7 +15,7 @@ class _AndroidN extends State<AndroidN> {
   Widget getPlatformTextView() {
       return AndroidView(
           viewType: "platform_text_view",
-          creationParams: <String, dynamic>{"text":"This application was created by Pestava Hanna."},
+          creationParams: <String, dynamic>{"text":"This application was created by Pestava Hanna. Latest update: 08.12.2020."},
           creationParamsCodec: const StandardMessageCodec());
   }
   @override

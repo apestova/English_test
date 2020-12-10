@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:english_test1/DatabaseProvider.dart';
 import 'package:flutter/material.dart';
 
 import 'Question.dart';
@@ -6,7 +7,10 @@ import 'Results.dart';
 import 'AndroidN.dart';
 
 class Test extends StatefulWidget {
-  Test() : super();
+  final int id;
+  Test( this.id
+
+) : super();
 
   @override
   _Test createState() => _Test();
@@ -15,10 +19,21 @@ class _Test extends State<Test> {
   int index;
   String selectedAnswer;
   List<String> list= [];
+  List<Question> test = [];
   @override
   void initState() {
     super.initState();
     index = 0;
+    test = [];
+    DatabaseProvider().openSolutionDatabase().then((_){
+      DatabaseProvider().questions(widget.id).then((questions){
+        setState(() {
+          test = questions;
+        });
+      }
+      );
+    }
+    );
   }
   newIndex() {
 
@@ -31,7 +46,7 @@ class _Test extends State<Test> {
   }
   List<Widget> createRadioListAnswers() {
     List<Widget> widgets = [];
-    for (String answer in test1[index].answers ) {
+    for (String answer in test[index].answers ) {
       widgets.add(
         RadioListTile(
           value: answer,
@@ -53,6 +68,15 @@ class _Test extends State<Test> {
   }
   @override
   Widget build(BuildContext context) {
+  if (test.isEmpty) {
+    return Scaffold(
+      body: Center(
+        child : CircularProgressIndicator(
+        )
+      )
+    );
+  }
+    else
     return Scaffold(
      appBar: AppBar(
          toolbarHeight: 75,
@@ -75,7 +99,6 @@ class _Test extends State<Test> {
                );
              },
              color: Colors.black,
-
            ),
          ]
 
@@ -96,7 +119,8 @@ class _Test extends State<Test> {
         Padding(
           padding: EdgeInsets.symmetric (horizontal: 10),
           child:
-            Text("Question №" + (index+1).toString() + ". " + test1[index].question ,
+            Text(
+            "Question №" + (index+1).toString() + ". " + test[index].question ,
                 style: TextStyle (height: 1.5,
                   fontSize: 20.0,
 
@@ -119,7 +143,7 @@ class _Test extends State<Test> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Results(list: list),
+                    builder: (context) => Results(list, widget.id),
 
                   ),
                 );

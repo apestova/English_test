@@ -1,8 +1,9 @@
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'Test.dart';
 import 'AndroidN.dart';
+
 
 class StartTest extends StatefulWidget {
 
@@ -20,6 +21,7 @@ class StartTest extends StatefulWidget {
 
 
 class _StartTest extends State<StartTest> {
+  Random random = new Random();
   List<String> levels = ["Beginner(A1)", "Elementary(A2)", "Intermediate(B1)", "Upper Intermediate(B2)", "Advanced(C1)", "Mastery(C2)"];
 
   List<Widget> createListLevels() {
@@ -138,7 +140,7 @@ class _StartTest extends State<StartTest> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Test(),
+                      builder: (context) => Test(random.nextInt(2)+1),
                     ),
                   );
                 },
